@@ -19,4 +19,6 @@ Trên thực tế, mọi người đều sử dụng kiến thức của ngành 
 
 ## Mục đích của trang web này là gì?
 
-Trang web này ra đời nhằm mục đích giúp cho mọi người có thể thấu hiệu được những khái niệm, những khía cạnh, những góc khuất của tâm lý học bằng ngôn ngữ đơn giản và dễ hiểu nhất.
+Trang web này ra đời nhằm mục đích giúp cho mọi người có thể thấu hiểu được những khái niệm, những khía cạnh, những góc khuất của tâm lý học bằng ngôn ngữ đơn giản và dễ hiểu nhất.
+
+Người viết: [Akira Kaito](https://github.com/akirakaitonmk/) - 06/02/2026
