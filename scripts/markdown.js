@@ -14,10 +14,12 @@ const injectStyles = () => {
             --bg: #fdfcfb; --text: #2d3436; --border: #e2e8f0; 
             --accent: #6c5ce7; --soft-bg: #f1f2f6; --progress-bg: #6c5ce7;
             --container-w: 900px;
+            --link-highlight: rgba(108, 92, 231, 0.15);
         }
         [data-theme='dark'] { 
             --bg: #000000; --text: #dfe6e9; --border: #1e272e; 
             --accent: #a29bfe; --soft-bg: #1e272e; --progress-bg: #a29bfe;
+            --link-highlight: rgba(162, 155, 254, 0.2);
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,13 +60,42 @@ const injectStyles = () => {
             #sidebar.open { left: 0; }
         }
 
-        .toc-item { display: block; padding: 10px 0; color: var(--text); text-decoration: none; font-size: 0.9rem; opacity: 0.5; transition: 0.3s; border-bottom: 1px solid transparent; }
-        .toc-item:hover { opacity: 1; color: var(--accent); }
+        .toc-item { 
+            display: block; padding: 8px 12px; color: var(--text); 
+            text-decoration: none; font-size: 0.9rem; opacity: 0.5; 
+            transition: 0.3s; border-radius: 6px; margin-bottom: 4px;
+        }
+        .toc-item:hover { opacity: 1; color: var(--accent); background: var(--link-highlight); }
+        .toc-item.active { opacity: 1; color: var(--accent); background: var(--link-highlight); font-weight: 600; }
 
         .markdown-body { 
             padding: 5rem 2.5rem; 
             max-width: 100%;
             grid-column: 2;
+        }
+
+        .markdown-body .center {
+            text-align: center;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .markdown-body img.center {
+            display: block;
+            margin: 2rem auto;
+        }
+
+        .markdown-body a {
+            color: var(--accent);
+            text-decoration: none;
+            padding: 0 2px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .markdown-body a:hover {
+            background: var(--link-highlight);
         }
 
         @media (max-width: 600px) {
@@ -73,7 +104,7 @@ const injectStyles = () => {
         }
 
         .markdown-body h1 { font-size: 3.2rem; font-weight: 800; margin-bottom: 2rem; letter-spacing: -1px; }
-        .markdown-body h2 { font-size: 1.7rem; margin: 3rem 0 1rem; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        .markdown-body h2 { font-size: 1.7rem; margin: 3rem 0 1rem; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; scroll-margin-top: 2rem; }
         .markdown-body p { margin-bottom: 1.5rem; font-size: 1.05rem; }
         
         .markdown-body pre { background: #0d1117 !important; padding: 1.2rem; border-radius: 12px; margin: 1.5rem 0; overflow-x: auto; border: 1px solid var(--border); }
@@ -143,6 +174,15 @@ async function init() {
         const winScroll = document.documentElement.scrollTop;
         const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
         document.getElementById("progress-bar").style.width = (winScroll / height) * 100 + "%";
+        
+        const headers = document.querySelectorAll('.markdown-body h2');
+        const tocItems = document.querySelectorAll('.toc-item');
+        let current = "";
+        headers.forEach(h => { if (winScroll >= h.offsetTop - 100) current = h.id; });
+        tocItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('href') === `#${current}`) item.classList.add('active');
+        });
     });
 
     document.getElementById('scroll-top').onclick = () => window.scrollTo({top: 0, behavior: 'smooth'});
@@ -174,14 +214,16 @@ async function render(file) {
         const toc = document.getElementById('toc-container');
         const headers = container.querySelectorAll('h2');
         if (headers.length > 0) {
-            toc.innerHTML = '<p style="font-weight:800; margin-bottom:1.5rem; font-size:0.75rem; opacity:0.4">MỤC LỤC</p>';
+            toc.innerHTML = '<p style="font-weight:800; margin-bottom:1.5rem; font-size:0.75rem; opacity:0.4; padding-left:12px">MỤC LỤC</p>';
             headers.forEach((h, i) => {
                 h.id = `h-${i}`;
                 const a = document.createElement('a');
                 a.className = 'toc-item';
                 a.href = `#h-${i}`;
                 a.innerText = h.innerText;
-                a.onclick = () => { // Đóng menu khi chọn mục trên mobile
+                a.onclick = (e) => {
+                    e.preventDefault();
+                    document.getElementById(h.id).scrollIntoView({ behavior: 'smooth' });
                     if (window.innerWidth <= 900) {
                         document.getElementById('sidebar').classList.remove('open');
                         document.getElementById('overlay').classList.remove('show');
@@ -194,7 +236,7 @@ async function render(file) {
         }
 
         document.querySelectorAll('pre code').forEach(c => hljs.highlightElement(c));
-        if (window.MathJax.typesetPromise) await window.MathJax.typesetPromise();
+        if (window.MathJax && window.MathJax.typesetPromise) await window.MathJax.typesetPromise();
 
     } catch (e) {
         container.innerHTML = `<p>Lỗi tải nội dung.</p>`;
